@@ -66,7 +66,11 @@ for i = 1:length(featureFiles)
                             endTime = str2double(elAtts.item(elAttCount-1).getValue);
                         end
                     end
-                    emotionSeq = seq(ceil(startTime/sampPeriod):floor(endTime/sampPeriod));
+                    e = floor(endTime/sampPeriod);
+                    if (e > length(seq))
+                        e = length(seq);
+                    end
+                    emotionSeq = seq(ceil(startTime/sampPeriod):e);
                     
                     attributes = els.item(elCount-1).getElementsByTagName('attribute');
                     numAttributes = attributes.getLength;
