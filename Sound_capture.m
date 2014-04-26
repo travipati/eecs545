@@ -1,5 +1,6 @@
 
-recDuration = 2; 
+recDuration = 2;
+recPause = 0;
 recObj = audiorecorder
 
 count = 1; 
@@ -7,7 +8,8 @@ while count <= 10
     recordblocking(recObj, recDuration);
     y = getaudiodata(recObj);
     wavwrite(y, ['recording' num2str(count)]);
-    plot(y)
+    pause(recPause);    
+    %plot(y)
     
     count = count + 1; 
     if count == 10
