@@ -20,29 +20,38 @@ load model;
 keys = trans.keys;
 pi = 1/N * ones(N,1);
 p = zeros(length(keys),1);
+% digits(4);
 for k = 1:length(keys)
     emotion = keys(k);
-    a = trans(emotion{1,1});
+    A = trans(emotion{1,1});
     b = emis(emotion{1,1});
     
-    n=length(a(1,:));
     T=length(seq);
-
-    for i=1:n        
-        m(1,i)=b(i,seq(1))*pi(i);
-    end
-    for t=1:(T-1)  
-        for j=1:n
-            z=0;
-            for i=1:n
-                z=z+a(i,j)*m(t,i);
+%     m = zeros(T,n);
+%     for i=1:n        
+%         m(1,i)=b(i,seq(1))*pi(i);
+%     end
+%     for t=1:(T-1)  
+%         for j=1:n
+%             z=0;
+%             for i=1:n
+%                 z=z+a(i,j)*m(t,i);
+%             end
+%             m(t+1,j)=z*b(j,seq(t+1));
+%         end
+%     end
+k
+    d = zeros(N,T);
+    d(:,1) = pi .* b(:,seq(1));
+    for t = 2:T
+        for j = 1:N
+            z = max(d(:,t-1) .* A(:,j));
+            if (z ~= 0 && b(j,seq(t)) ~= 0)
+                d(j,t) = vpa(z * b(j,seq(t)));
             end
-            m(t+1,j)=z*b(j,seq(t+1));
         end
     end
-    for i=1:n       
-        p(k)=p(k)+m(T,i);        
-    end
+    p(k) = sum(d(:,T));
 end
 
 [prob, idx] = sort(p);
