@@ -2,6 +2,7 @@ clear;
 
 N = 4;
 D = 4;
+sessions = 1:5;
 
 seqs = containers.Map;
 load gm;
@@ -9,6 +10,12 @@ load gm;
 featureDir = 'features/';
 featureFiles = dir(featureDir);
 for i = 1:length(featureFiles)
+    if (~ismember(str2double(featureFiles(i).name(4:5)),sessions))
+        continue;
+    else
+        ses = str2double(featureFiles(i).name(4:5));
+    end
+    
     mfcfile = fopen( strcat(featureDir,featureFiles(i).name), 'r', 'b' );
 
     nSamples = fread( mfcfile, 1, 'int32' );
@@ -22,13 +29,16 @@ for i = 1:length(featureFiles)
 
     seq = cluster(gm,features)';
     
-    genderFile = 'f1';
-    gender = 'Female';
-    for g = 1:2
+
+    genderFile = {strcat('f',int2str(ses)); strcat('m',int2str(ses))};
+    gender = {'Female'; 'Male'};
+    
+    for g = 1:length(gender)
     try   
         periods = strfind(featureFiles(i).name,'.');
-        tree = xmlread(strcat('../IEMOCAP_full_release/Session1/dialog/EmoEvaluation/Self-evaluation/', ...
-            featureFiles(i).name(1:periods(1)-1),'_',genderFile,'.anvil'));
+        file = strcat('../IEMOCAP_full_release/Session',int2str(ses),'/dialog/EmoEvaluation/Self-evaluation/', ...
+            featureFiles(i).name(1:periods(1)-1),'_',genderFile(g),'.anvil');
+        tree = xmlread(file{1,1});
     catch
         continue;
     end
@@ -42,7 +52,7 @@ for i = 1:length(featureFiles)
         numTrackAtts = trackAtts.getLength;
         for trackAttCount = 1:numTrackAtts
             if (strcmp(trackAtts.item(trackAttCount-1).getName, 'name')&& ...
-                    strcmp(trackAtts.item(trackAttCount-1).getValue, strcat(gender,'.Emotion')))
+                    strcmp(trackAtts.item(trackAttCount-1).getValue, strcat(gender(g),'.Emotion')))
                 els = tracks.item(trackCount-1).getElementsByTagName('el');
                 numEls = els.getLength;
                 for elCount = 1:numEls
@@ -80,8 +90,6 @@ for i = 1:length(featureFiles)
             end
         end
     end
-    genderFile = 'm1';
-    gender = 'Male';
     end
 end
 
@@ -96,13 +104,19 @@ for i = 1:N
     initEmis(i,:) = initEmis(i,:) ./ s(i);
 end
 
+% initTrans = [0.7 0.1 0.1 0.1; ...
+%              0.05 0.8 0.1 0.05; ...
+%              0.3 0.05 0.6 0.05; ...
+%              0.1 0.2 0.03 0.4];
+% initEmis = 1/N * ones (N,N);
+
 trans = containers.Map;
 emis = containers.Map;
 keys = seqs.keys;
 for k = 1:length(keys)
     emotion = keys(k);
     emotionSeqs = values(seqs,emotion);
-    [trans(emotion{1,1}), emis(emotion{1,1})] = hmmtrain(emotionSeqs{1,1},initTrans,initEmis);
+    [trans(emotion{1,1}), emis(emotion{1,1})] = hmmtrain(emotionSeqs{1,1},initTrans,initEmis,'Tolerance',1e-3);
 end
 
 save model.mat trans emis;
