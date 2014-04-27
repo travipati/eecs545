@@ -1,8 +1,7 @@
-clear;
-
+function [ emotion ] = categorize( filename )
 N = 4;
 
-mfcfile = fopen( 'features/Ses01F_impro03.htk', 'r', 'b' );
+mfcfile = fopen( filename, 'r', 'b' );
 
 nSamples = fread( mfcfile, 1, 'int32' );
 sampPeriod = fread( mfcfile, 1, 'int32' )*1E-7;
@@ -46,3 +45,6 @@ end
 p = p/sum(p);
 [prob, idx] = sort(p,'descend');
 emotions = keys(idx);
+emotion = emotions(1);
+disp(emotion{1,1});
+end
