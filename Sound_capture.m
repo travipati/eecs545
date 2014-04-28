@@ -1,5 +1,5 @@
 
-recDuration = 2;
+recDuration = 5;
 recPause = 0;
 recObj = audiorecorder
 
